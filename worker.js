@@ -3,10 +3,18 @@ import { getAssetFromKV } from '@cloudflare/kv-asset-handler';
 export default {
     async fetch(request, env, ctx) {
         try {
-            // הפונקציה מושכת ומגישה את הקבצים מתוך תיקיית ה-bucket שהגדרנו (public)
+            let url = new URL(request.url);
+            
+            // אם המשתמש נכנס לנתיב הספציפי, נגיש לו את הקבצים מהתיקייה הראשית
+            if (url.pathname.startsWith('/tfila')) {
+                url.pathname = url.pathname.replace('/tfila', '/');
+            }
+            
+            const modifiedRequest = new Request(url.toString(), request);
+
             return await getAssetFromKV(
                 {
-                    request,
+                    request: modifiedRequest,
                     waitUntil: ctx.waitUntil.bind(ctx),
                 },
                 {
@@ -15,7 +23,6 @@ export default {
                 }
             );
         } catch (e) {
-            // במידה והנתיב לא קיים (שגיאת 404), נחזיר הודעה מתאימה
             return new Response('העמוד לא נמצא', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
         }
     },

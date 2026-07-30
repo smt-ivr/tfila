@@ -1,0 +1,53 @@
+body { 
+    font-family: 'Heebo', sans-serif; 
+}
+
+.vacation-pattern { 
+    background-image: repeating-linear-gradient(45deg, #f1f5f9 25%, transparent 25%, transparent 75%, #f1f5f9 75%, #f1f5f9), 
+                      repeating-linear-gradient(45deg, #f1f5f9 25%, #ffffff 25%, #ffffff 75%, #f1f5f9 75%, #f1f5f9); 
+    background-position: 0 0, 10px 10px; 
+    background-size: 20px 20px; 
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* הגדרות הדפסה מקצועיות לטבלאות נקיות */
+@media print {
+    aside, #login-screen, button, .no-print, #email-modal, #student-modal, #spinner-overlay {
+        display: none !important;
+    }
+    body, main, #app-container, #app-content, #reports-view {
+        height: auto !important;
+        width: 100% !important;
+        overflow: visible !important;
+        background: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: block !important;
+    }
+    #table-wrapper {
+        box-shadow: none !important;
+        border: none !important;
+        overflow: visible !important;
+        margin: 0 !important;
+    }
+    table {
+        width: 100% !important;
+        page-break-inside: auto;
+    }
+    tr { 
+        page-break-inside: avoid; 
+        page-break-after: auto; 
+    }
+    thead { 
+        display: table-header-group; 
+    }
+    /* שימור צבעי רקע בהדפסה */
+    .bg-indigo-50, .bg-slate-100 { 
+        -webkit-print-color-adjust: exact; 
+        print-color-adjust: exact; 
+    }
+}

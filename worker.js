@@ -10,7 +10,7 @@ export default {
         const url = new URL(request.url);
         const path = url.pathname;
 
-        // ניתוב לקובץ הראשי - כולל תמיכה בנתיב השורש ובנתיב /tfila
+        // ניתוב לקובץ הראשי
         if (path === '/' || path === '/tfila' || path === '/tfila/' || path === '/index.html' || path === '/tfila/index.html') {
             return new Response(htmlContent, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
         }

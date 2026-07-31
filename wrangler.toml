@@ -1,14 +1,8 @@
-name = "tfila"
+name = "my-web-project"
 main = "worker.js"
-compatibility_date = "2024-04-11"
+compatibility_date = "2024-05-24"
 
-[site]
-bucket = "."
-exclude = [
-  "worker.js",
-  "wrangler.toml",
-  "package.json",
-  "package-lock.json",
-  "node_modules",
-  ".git"
-]
+[[rules]]
+type = "Text"
+globs = ["**/*.html", "**/*.css", "**/*.js"]
+fallthrough = true

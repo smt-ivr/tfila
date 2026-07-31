@@ -4,6 +4,5 @@ compatibility_date = "2024-05-24"
 
 [[rules]]
 type = "Text"
-# אנו מגדירים במפורש רק את קובצי הלקוח כדי לא לכלול את worker.js
-globs = ["**/*.html", "**/*.css", "app.js", "reports.js", "students.js", "vacations.js"]
+globs = ["**/*.html", "**/*.css", "**/client-*.js"]
 fallthrough = true

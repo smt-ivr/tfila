@@ -1,9 +1,9 @@
 import htmlContent from './index.html';
 import cssContent from './style.css';
-import appJs from './app.js';
-import reportsJs from './reports.js';
-import studentsJs from './students.js';
-import vacationsJs from './vacations.js';
+import appJs from './client-app.js';
+import reportsJs from './client-reports.js';
+import studentsJs from './client-students.js';
+import vacationsJs from './client-vacations.js';
 
 export default {
     async fetch(request, env, ctx) {
@@ -21,6 +21,7 @@ export default {
         }
         
         // ניתוב לקובצי ה-JavaScript
+        // שים לב: הדפדפן עדיין יבקש את הקבצים בשם המקורי שלהם, אבל נגיש לו את הקבצים החדשים שייבאנו
         if (path === '/app.js') {
             return new Response(appJs, { headers: { 'Content-Type': 'application/javascript; charset=utf-8' } });
         }

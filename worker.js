@@ -1,29 +1,40 @@
-import { getAssetFromKV } from '@cloudflare/kv-asset-handler';
+import htmlContent from './index.html';
+import cssContent from './style.css';
+import appJs from './app.js';
+import reportsJs from './reports.js';
+import studentsJs from './students.js';
+import vacationsJs from './vacations.js';
 
 export default {
     async fetch(request, env, ctx) {
-        try {
-            let url = new URL(request.url);
-            
-            // אם המשתמש נכנס לנתיב הספציפי, נגיש לו את הקבצים מהתיקייה הראשית
-            if (url.pathname.startsWith('/tfila')) {
-                url.pathname = url.pathname.replace('/tfila', '/');
-            }
-            
-            const modifiedRequest = new Request(url.toString(), request);
+        const url = new URL(request.url);
+        const path = url.pathname;
 
-            return await getAssetFromKV(
-                {
-                    request: modifiedRequest,
-                    waitUntil: ctx.waitUntil.bind(ctx),
-                },
-                {
-                    ASSET_NAMESPACE: env.__STATIC_CONTENT,
-                    ASSET_MANIFEST: JSON.parse(env.__STATIC_CONTENT_MANIFEST),
-                }
-            );
-        } catch (e) {
-            return new Response('העמוד לא נמצא', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+        // ניתוב לקובץ הראשי
+        if (path === '/' || path === '/index.html') {
+            return new Response(htmlContent, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
         }
-    },
+        
+        // ניתוב לקובץ העיצוב
+        if (path === '/style.css') {
+            return new Response(cssContent, { headers: { 'Content-Type': 'text/css; charset=utf-8' } });
+        }
+        
+        // ניתוב לקובצי ה-JavaScript
+        if (path === '/app.js') {
+            return new Response(appJs, { headers: { 'Content-Type': 'application/javascript; charset=utf-8' } });
+        }
+        if (path === '/reports.js') {
+            return new Response(reportsJs, { headers: { 'Content-Type': 'application/javascript; charset=utf-8' } });
+        }
+        if (path === '/students.js') {
+            return new Response(studentsJs, { headers: { 'Content-Type': 'application/javascript; charset=utf-8' } });
+        }
+        if (path === '/vacations.js') {
+            return new Response(vacationsJs, { headers: { 'Content-Type': 'application/javascript; charset=utf-8' } });
+        }
+
+        // שגיאת 404 אם הקובץ לא נמצא
+        return new Response('Not Found', { status: 404 });
+    }
 };

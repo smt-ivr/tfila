@@ -7,8 +7,9 @@ async function loadReports(dateParam = null) {
     const contentDiv = document.getElementById('reports-view');
 
     if (isFirstLoad) {
+        // התיקון כאן: הוסרה המחלקה h-full
         contentDiv.innerHTML = `
-            <div class="flex flex-col items-center justify-center h-full text-indigo-600 mt-20">
+            <div class="flex flex-col items-center justify-center mt-20 text-indigo-600">
                 <i class="fas fa-circle-notch fa-spin text-5xl mb-4"></i>
                 <span class="text-slate-600 font-bold text-lg">טוען נתונים מהשרת...</span>
             </div>

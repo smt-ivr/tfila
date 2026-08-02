@@ -73,9 +73,9 @@ function analyzeExtensionSettings(iniData) {
     }
 
     if (!isWhitelistOn) {
-        htmlStatus += `<div class="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-2 rounded-lg font-bold flex items-center gap-2 mt-3 shadow-sm"><i class="fas fa-shield-alt"></i>אזהרה: הרשימה הלבנה מנותקת! (חסר white_list=yes). כל אחד יכול לחייג למערכת.</div>`;
+        htmlStatus += `<div class="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-2 rounded-lg font-bold flex items-center gap-2 mt-3 shadow-sm"><i class="fas fa-shield-alt"></i>אזהרה: כניסה לשלוחה למספרים מורשים בלבד לא פעילה! (חסר white_list=yes). כל אחד יכול לחייג למערכת.</div>`;
     } else {
-        htmlStatus += `<div class="bg-indigo-50 border border-indigo-200 text-indigo-700 px-4 py-2 rounded-lg font-bold flex items-center gap-2 mt-3 shadow-sm"><i class="fas fa-lock"></i>הרשימה הלבנה פעילה ומגינה על המערכת</div>`;
+        htmlStatus += `<div class="bg-indigo-50 border border-indigo-200 text-indigo-700 px-4 py-2 rounded-lg font-bold flex items-center gap-2 mt-3 shadow-sm"><i class="fas fa-lock"></i>כניסה לשלוחה למספרים מורשים בלבד מופעלת</div>`;
     }
     
     statusDiv.innerHTML = htmlStatus;

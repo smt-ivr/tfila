@@ -2,37 +2,76 @@ const API_BASE = 'https://smti.uk/tfila/api';
 
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
-    
-    document.getElementById('password-input').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') login();
-    });
+    // האירוע של ה-Enter הוסר מכאן משום שהוא מטופל כעת טבעית על ידי תגית ה-<form> ב-HTML
 });
 
-function checkAuth() {
+async function checkAuth() {
     const pass = localStorage.getItem('admin_pass');
+    const ipWhitelisted = localStorage.getItem('ip_whitelisted');
+    
     const loginScreen = document.getElementById('login-screen');
     const appContainer = document.getElementById('app-container');
+    const ipLoader = document.getElementById('ip-check-loader');
+    const loginFormContainer = document.getElementById('login-form-container');
     
-    if (!pass) {
-        loginScreen.classList.remove('hidden');
-        loginScreen.classList.add('flex');
-        appContainer.classList.add('hidden');
-        appContainer.classList.remove('flex');
+    // אם יש אימות קודם (סיסמה או IP מאושר מהזיכרון), כנס ישירות
+    if (pass || ipWhitelisted === 'true') {
+        showApp(loginScreen, appContainer);
+        return;
+    }
+
+    // הצגת מסך ההתחברות עם מסך הטעינה של בדיקת ה-IP
+    loginScreen.classList.remove('hidden');
+    loginScreen.classList.add('flex');
+    appContainer.classList.add('hidden');
+    appContainer.classList.remove('flex');
+    
+    ipLoader.classList.remove('hidden');
+    ipLoader.classList.add('flex');
+    loginFormContainer.classList.add('hidden');
+    loginFormContainer.classList.remove('flex');
+
+    try {
+        // בדיקת הרשאת IP מול השרת
+        const res = await fetch(`${API_BASE}/check-ip`);
+        const data = await res.json().catch(() => ({}));
         
-        // וידוא שהפוקוס קופץ ישר לתיבת הסיסמה
-        setTimeout(() => document.getElementById('password-input').focus(), 100);
-    } else {
-        loginScreen.classList.add('hidden');
-        loginScreen.classList.remove('flex');
-        appContainer.classList.remove('hidden');
-        appContainer.classList.add('flex');
-        
-        switchView('reports');
+        if (data.whitelisted === true) {
+            // ה-IP מורשה, שומרים בזיכרון ופותחים את המערכת
+            localStorage.setItem('ip_whitelisted', 'true');
+            showApp(loginScreen, appContainer);
+        } else {
+            // ה-IP אינו מורשה, מציגים את שדה הסיסמה
+            showLoginForm(ipLoader, loginFormContainer);
+        }
+    } catch (e) {
+        // במקרה של שגיאת רשת, נפול חזרה לבקשת סיסמה
+        showLoginForm(ipLoader, loginFormContainer);
     }
 }
 
+// פונקציית עזר להצגת האפליקציה המרכזית
+function showApp(loginScreen, appContainer) {
+    loginScreen.classList.add('hidden');
+    loginScreen.classList.remove('flex');
+    appContainer.classList.remove('hidden');
+    appContainer.classList.add('flex');
+    switchView('reports');
+}
+
+// פונקציית עזר להצגת שדה הסיסמה
+function showLoginForm(ipLoader, loginFormContainer) {
+    ipLoader.classList.add('hidden');
+    ipLoader.classList.remove('flex');
+    loginFormContainer.classList.remove('hidden');
+    loginFormContainer.classList.add('flex');
+    // מיקוד אוטומטי על תיבת הסיסמה
+    setTimeout(() => document.getElementById('password-input').focus(), 100);
+}
+
 async function login() {
-    const pass = document.getElementById('password-input').value;
+    const passInput = document.getElementById('password-input');
+    const pass = passInput.value;
     const errorMsg = document.getElementById('login-error');
     const btn = document.getElementById('login-btn');
     
@@ -49,30 +88,35 @@ async function login() {
             body: JSON.stringify({ password: pass })
         });
 
-        // ניסיון לחלץ את תוכן התשובה מהשרת
         const data = await res.json().catch(() => ({}));
 
         if (res.ok) {
             localStorage.setItem('admin_pass', pass);
             checkAuth();
         } else {
-            // הצגת הודעת השגיאה המדויקת מהשרת
+            // הצגת השגיאה ומחיקת תוכן הסיסמה המוטעה מהשדה
             errorMsg.innerText = data.error || data.message || 'שגיאה באימות נתונים מול השרת';
             errorMsg.classList.remove('hidden');
+            passInput.value = ''; 
+            passInput.focus();
         }
     } catch (e) {
-        // שגיאה שמוצגת רק אם השרת לא מגיב או שאין אינטרנט
         errorMsg.innerText = 'שגיאת תקשורת - השרת אינו מגיב';
         errorMsg.classList.remove('hidden');
     } finally {
-        btn.innerHTML = 'היכנס';
+        btn.innerHTML = 'היכנס למערכת';
         btn.disabled = false;
     }
 }
 
 function logout() {
+    // מחיקת כל ההרשאות מהזיכרון
     localStorage.removeItem('admin_pass');
+    localStorage.removeItem('ip_whitelisted');
+    
     document.getElementById('password-input').value = '';
+    document.getElementById('login-error').classList.add('hidden');
+    
     checkAuth();
 }
 

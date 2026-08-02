@@ -2,7 +2,6 @@ const API_BASE = 'https://smti.uk/tfila/api';
 
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
-    // האירוע של ה-Enter הוסר מכאן משום שהוא מטופל כעת טבעית על ידי תגית ה-<form> ב-HTML
 });
 
 async function checkAuth() {
@@ -121,7 +120,7 @@ function logout() {
 }
 
 function switchView(viewName) {
-    const views = ['reports', 'students', 'vacations'];
+    const views = ['reports', 'students', 'vacations', 'phone'];
     const activeNavClass = "flex items-center gap-3 px-3 py-2.5 bg-indigo-50 text-indigo-700 rounded-lg font-bold transition-all border border-indigo-100 text-sm cursor-pointer";
     const inactiveNavClass = "flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 rounded-lg font-medium transition-all text-sm cursor-pointer";
 
@@ -131,22 +130,23 @@ function switchView(viewName) {
         
         if (v === viewName) {
             viewEl.classList.remove('hidden');
-            if (v === 'students' || v === 'vacations') {
+            if (v === 'students' || v === 'vacations' || v === 'phone') {
                 viewEl.classList.add('flex');
             } else {
                 viewEl.classList.add('block');
             }
-            navEl.className = activeNavClass;
+            if (navEl) navEl.className = activeNavClass;
         } else {
             viewEl.classList.add('hidden');
             viewEl.classList.remove('flex', 'block');
-            navEl.className = inactiveNavClass;
+            if (navEl) navEl.className = inactiveNavClass;
         }
     });
 
     if (viewName === 'reports' && typeof loadReports === 'function') loadReports();
     if (viewName === 'students' && typeof loadStudents === 'function') loadStudents();
     if (viewName === 'vacations' && typeof loadVacations === 'function') loadVacations();
+    if (viewName === 'phone' && typeof loadPhoneSettings === 'function') loadPhoneSettings();
 }
 
 function openEmailModal() {

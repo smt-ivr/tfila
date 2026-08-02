@@ -23,7 +23,7 @@ async function loadPhoneSettings() {
         const data = await res.json();
         if (data.success) {
             didEl.innerText = data.data.did || 'לא נמצא מספר';
-            extEl.innerText = data.data.extension ? `שלוחה: /${data.data.extension}` : 'לא נמצא ניתוב מוגדר';
+            extEl.innerText = data.data.extension ? `מופנה לשלוחה: ${data.data.extension} במערכת הראשית`  : 'לא נמצא ניתוב מוגדר';
             
             analyzeExtensionSettings(data.data.extSettings);
         } else {

@@ -22,24 +22,49 @@
 </head>
 <body class="bg-slate-50 flex h-screen overflow-hidden antialiased text-slate-800">
 
+    <!-- קונטיינר להודעות קופצות (Toasts) -->
+    <div id="toast-container" class="fixed bottom-6 left-6 z-[80] flex flex-col gap-3 pointer-events-none"></div>
+
+    <!-- מודל אישור מותאם (Custom Confirm) -->
+    <div id="custom-confirm-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm items-center justify-center z-[70]">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl border border-slate-200 w-80 max-w-[95%] text-center transform transition-all">
+            <div class="text-amber-500 mb-3"><i class="fas fa-exclamation-triangle text-5xl"></i></div>
+            <h3 class="text-lg font-bold text-slate-800 mb-6 whitespace-pre-line" id="custom-confirm-msg">האם אתה בטוח?</h3>
+            <div class="flex justify-center gap-3">
+                <button onclick="closeCustomConfirm()" class="px-5 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-lg hover:bg-slate-200 transition">ביטול</button>
+                <button id="confirm-btn-yes" class="px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition shadow-md">כן, אישור</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- מודל קלט מותאם (Custom Prompt) -->
+    <div id="custom-prompt-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm items-center justify-center z-[70]">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl border border-slate-200 w-96 max-w-[95%] transform transition-all">
+            <h3 class="text-xl font-bold text-slate-800 mb-2" id="custom-prompt-title">הזנת נתונים</h3>
+            <p class="text-sm font-bold text-slate-500 mb-4 whitespace-pre-line" id="custom-prompt-desc">אנא הזן את הערך המבוקש:</p>
+            <input type="text" id="custom-prompt-input" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-left mb-6 font-bold" dir="ltr">
+            <div class="flex justify-end gap-3">
+                <button onclick="closeCustomPrompt()" class="px-5 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-lg hover:bg-slate-200 transition">ביטול</button>
+                <button id="prompt-btn-save" class="px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition shadow-md">שמירה</button>
+            </div>
+        </div>
+    </div>
+
     <!-- מסך התחברות -->
     <div id="login-screen" class="hidden fixed inset-0 bg-slate-50 items-center justify-center z-50">
         <div class="bg-white p-8 rounded-2xl shadow-xl border border-slate-200 w-[420px] max-w-[95%] flex flex-col items-center">
             
-            <!-- לוגו והקשר המערכת -->
             <div class="text-center mb-6 w-full pb-5 border-b border-slate-100 flex flex-col items-center">
                 <img src="https://smt-tel-manager.netlify.app/smt.png" draggable="false" ondragstart="return false;" class="h-16 mb-3 select-none pointer-events-none drop-shadow-sm" alt="SMT Logo">
                 <h1 class="text-xl font-extrabold text-slate-800 leading-none mb-2">ממשק ניהול דוחות</h1>
                 <p class="text-sm font-bold text-indigo-600 bg-indigo-50 px-4 py-1 rounded-full border border-indigo-100">מבצע תפילה</p>
             </div>
 
-            <!-- אזור טעינת בדיקת IP -->
             <div id="ip-check-loader" class="flex flex-col items-center justify-center my-4">
                 <i class="fas fa-circle-notch fa-spin text-4xl text-indigo-600 mb-3"></i>
                 <p class="text-slate-600 font-bold">בודק הרשאות גישה...</p>
             </div>
 
-            <!-- טופס ההתחברות (מוסתר עד סיום בדיקת ה-IP) -->
             <div id="login-form-container" class="hidden w-full flex-col items-center">
                 <div class="text-center mb-5 w-full">
                     <div class="inline-flex items-center justify-center gap-2 bg-amber-50 text-amber-700 border border-amber-200 px-3 py-2 rounded-lg text-sm font-bold w-full">
@@ -48,7 +73,6 @@
                     </div>
                 </div>
                 
-                <!-- שימוש בתגית form פותר את האזהרה בקונסול ומאפשר לחיצה על Enter טבעית -->
                 <form id="login-form" onsubmit="event.preventDefault(); login();" class="w-full">
                     <input type="password" id="password-input" autocomplete="current-password" placeholder="הכנס סיסמה" class="w-full px-4 py-3 border border-slate-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center text-lg font-medium">
                     <button type="submit" id="login-btn" class="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 font-bold transition-all shadow-md">
@@ -64,7 +88,6 @@
     <div id="app-container" class="hidden w-full h-full">
         <!-- תפריט צד (Sidebar) -->
         <aside class="w-56 bg-white border-l border-slate-200 flex flex-col shadow-sm z-20 shrink-0">
-            <!-- אזור קרדיט ולוגו עליון מצומצם במיוחד -->
             <div class="pt-3 pb-2 px-2 flex flex-col items-center justify-center border-b border-slate-200 bg-slate-50/80 text-center">
                 <h1 class="text-[12px] font-extrabold text-slate-800 leading-none mb-1">ממשק ניהול דוחות</h1>
                 <p class="text-[10px] text-slate-500 leading-none mb-2">פיתוח מיוחד עבור ת"ת בת עין צפת</p>
@@ -106,11 +129,11 @@
 
         <!-- אזור תוכן מרכזי -->
         <main class="flex-1 flex flex-col h-screen overflow-auto bg-slate-50 relative p-6" id="app-content">
-            <!-- תצוגת דוחות נוכחות -->
+            
             <div id="reports-view" class="w-full h-full block max-w-[1400px] mx-auto"></div>
 
-            <!-- תצוגת ניהול תלמידים -->
             <div id="students-view" class="hidden w-full h-full flex-col max-w-[1400px] mx-auto">
+                <!-- השארתי בדיוק כפי שהיה כדי לא להרוס כלום -->
                 <div class="w-full h-20 mb-5 flex justify-between items-center bg-white px-6 rounded-xl shadow-sm border border-slate-200 no-print">
                     <div class="flex items-center gap-3">
                         <button onclick="openStudentModal()" class="px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm text-sm">
@@ -154,7 +177,6 @@
                 </div>
             </div>
 
-            <!-- תצוגת יומן חופשות -->
             <div id="vacations-view" class="hidden w-full h-full flex-col max-w-[1400px] mx-auto">
                 <div class="w-full h-20 mb-5 flex justify-between items-center bg-white px-6 rounded-xl shadow-sm border border-slate-200 shrink-0 no-print">
                     <button onclick="navigateMonth(-1)" class="w-10 h-10 flex items-center justify-center bg-slate-50 border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-100 hover:text-indigo-600 transition-colors shadow-sm" title="חודש קודם">
@@ -175,45 +197,70 @@
 
             <!-- תצוגת הגדרות טלפון -->
             <div id="phone-view" class="hidden w-full h-full flex-col max-w-[1400px] mx-auto">
-                <div class="w-full h-20 mb-5 flex justify-between items-center bg-white px-6 rounded-xl shadow-sm border border-slate-200 no-print">
+                <div class="w-full h-20 mb-5 flex justify-between items-center bg-white px-6 rounded-xl shadow-sm border border-slate-200 no-print shrink-0">
                     <h2 class="text-2xl font-black text-indigo-700 flex items-center justify-center gap-3">
                         <i class="fas fa-cogs text-indigo-500"></i>
-                        ניהול שלוחה והגדרות
+                        הגדרות שלוחה טלפונית
                     </h2>
+                    <div class="flex flex-col items-end">
+                        <span class="text-xs font-bold text-slate-400 mb-0.5">מספר המערכת:</span>
+                        <div class="flex items-center gap-3">
+                            <span id="phone-ext" class="text-sm font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1 rounded-full shadow-sm" dir="ltr">...</span>
+                            <span id="phone-did" class="text-2xl font-black text-slate-800 tracking-widest" dir="ltr">...</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-                    <!-- אזור פרטי השלוחה ובדיקת תקינות -->
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-300 p-6 flex flex-col items-center text-center h-fit">
-                        <div class="w-16 h-16 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center text-3xl mb-4 shadow-sm border border-indigo-100">
-                            <i class="fas fa-phone"></i>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 overflow-hidden pb-4">
+                    <!-- אזור הגדרות ומיילים -->
+                    <div class="flex flex-col gap-6 h-full overflow-hidden">
+                        <!-- אזור מידע וסטטוס אוטומטי -->
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-300 p-5 flex flex-col shrink-0">
+                            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2 mb-4">
+                                <i class="fas fa-info-circle text-indigo-500"></i> סטטוס חיבור ו-API
+                            </h3>
+                            <div id="api-status-result" class="flex flex-col gap-2"></div>
                         </div>
-                        <h3 class="text-slate-500 font-bold mb-1">מספר המערכת:</h3>
-                        <div id="phone-did" class="text-4xl font-black text-slate-800 tracking-wider mb-2" dir="ltr">...</div>
-                        <div id="phone-ext" class="text-lg font-bold text-indigo-600 bg-indigo-50 px-4 py-1 rounded-full border border-indigo-100 mb-8">...</div>
-                        
-                        <div class="w-full border-t border-slate-100 pt-6">
-                            <h4 class="text-slate-600 font-bold mb-4 text-right">סטטוס חיבור לשרת (API):</h4>
-                            <button id="check-api-btn" onclick="checkApiStatus()" class="w-full px-5 py-3 bg-slate-800 text-white font-bold rounded-lg hover:bg-slate-900 transition-colors shadow-md flex items-center justify-center gap-2">
-                                <i class="fas fa-sync-alt"></i> בדיקת תקינות שלוחה
-                            </button>
-                            <div id="api-status-result" class="mt-4 text-right"></div>
+
+                        <!-- אזור ניהול רשימת תפוצה (מיילים) -->
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-300 flex flex-col flex-1 overflow-hidden">
+                            <div class="p-5 border-b border-slate-200 bg-slate-50 flex justify-between items-center shrink-0">
+                                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                    <i class="fas fa-envelope-open-text text-indigo-500"></i> רשימת תפוצה למיילים
+                                </h3>
+                                <div class="flex items-center gap-3">
+                                    <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2 py-1 rounded border border-indigo-200">
+                                        <span id="total-emails-count">0</span> נמענים
+                                    </span>
+                                    <button onclick="addEmailAction()" class="bg-indigo-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition shadow-sm">
+                                        הוסף נמען <i class="fas fa-plus mr-1"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="flex-1 overflow-y-auto">
+                                <table class="w-full text-right border-collapse">
+                                    <tbody id="emails-table-body">
+                                        <!-- המיילים יופיעו כאן -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
 
                     <!-- אזור ניהול רשימה לבנה -->
                     <div class="bg-white rounded-xl shadow-sm border border-slate-300 flex flex-col h-full overflow-hidden">
-                        <div class="p-5 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+                        <div class="p-5 border-b border-slate-200 bg-slate-50 flex justify-between items-center shrink-0">
                             <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                                <i class="fas fa-list-ul text-indigo-500"></i> רשימה לבנה (מורשים)
+                                <i class="fas fa-list-ul text-indigo-500"></i> רשימה לבנה (מספרים מורשים)
                             </h3>
                             <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2 py-1 rounded border border-indigo-200">
                                 <span id="total-whitelist-count">0</span> מספרים
                             </span>
                         </div>
                         
-                        <div class="p-4 bg-white border-b border-slate-200 flex gap-2">
-                            <input type="tel" id="new-whitelist-num" placeholder="הזן מספר פלאפון" class="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-left" dir="ltr">
+                        <div class="p-4 bg-white border-b border-slate-200 flex gap-3 shrink-0">
+                            <input type="tel" id="new-whitelist-num" placeholder="הזן מספר פלאפון להוספה" class="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-left font-bold" dir="ltr">
                             <button id="add-whitelist-btn" onclick="addWhitelistNumber()" class="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition shadow-sm whitespace-nowrap">
                                 הוסף <i class="fas fa-plus mr-1"></i>
                             </button>
@@ -233,9 +280,7 @@
         </main>
     </div>
 
-    <!-- מודל הוספה/עריכת תלמיד -->
     <div id="student-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm items-center justify-center z-[60]">
-        <!-- תוכן המודל -->
         <div class="bg-white p-6 rounded-xl shadow-2xl border border-slate-200 w-[400px] max-w-[95%] relative">
             <button onclick="closeStudentModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition">
                 <i class="fas fa-times text-xl"></i>
@@ -269,13 +314,11 @@
         </div>
     </div>
 
-    <!-- מודל שליחת מייל -->
     <div id="email-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm items-center justify-center z-[60]">
-        <!-- תוכן המודל -->
         <div class="bg-white p-6 rounded-xl shadow-2xl border border-slate-200 w-96 max-w-[95%]">
             <h3 class="text-xl font-bold text-slate-800 mb-4"><i class="fas fa-envelope text-indigo-600 ml-2"></i>שליחת דוח במייל</h3>
             <label class="block text-sm font-bold text-slate-600 mb-1">כתובות אימייל (מופרדות בפסיק)</label>
-            <input type="text" id="email-input" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-left mb-6" dir="ltr" placeholder="example@mail.com">
+            <input type="text" id="email-input" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-left mb-6 font-bold" dir="ltr" placeholder="example@mail.com">
             <div class="flex justify-end gap-3">
                 <button onclick="closeEmailModal()" class="px-5 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg hover:bg-slate-200 transition">ביטול</button>
                 <button onclick="sendEmailAction(this)" class="px-5 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition shadow-md">שלח עכשיו</button>

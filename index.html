@@ -90,6 +90,10 @@
                     <i class="far fa-calendar-alt w-5 text-center"></i>
                     <span>יומן חופשות</span>
                 </a>
+                <a href="#" id="nav-phone" onclick="switchView('phone')" class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 rounded-lg font-medium transition-all text-sm cursor-pointer">
+                    <i class="fas fa-phone-alt w-5 text-center"></i>
+                    <span>הגדרות טלפון</span>
+                </a>
             </nav>
 
             <div class="p-3 border-t border-slate-100">
@@ -169,12 +173,69 @@
                 </div>
             </div>
 
+            <!-- תצוגת הגדרות טלפון -->
+            <div id="phone-view" class="hidden w-full h-full flex-col max-w-[1400px] mx-auto">
+                <div class="w-full h-20 mb-5 flex justify-between items-center bg-white px-6 rounded-xl shadow-sm border border-slate-200 no-print">
+                    <h2 class="text-2xl font-black text-indigo-700 flex items-center justify-center gap-3">
+                        <i class="fas fa-cogs text-indigo-500"></i>
+                        ניהול שלוחה והגדרות
+                    </h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
+                    <!-- אזור פרטי השלוחה ובדיקת תקינות -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-300 p-6 flex flex-col items-center text-center h-fit">
+                        <div class="w-16 h-16 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center text-3xl mb-4 shadow-sm border border-indigo-100">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <h3 class="text-slate-500 font-bold mb-1">מספר המערכת:</h3>
+                        <div id="phone-did" class="text-4xl font-black text-slate-800 tracking-wider mb-2" dir="ltr">...</div>
+                        <div id="phone-ext" class="text-lg font-bold text-indigo-600 bg-indigo-50 px-4 py-1 rounded-full border border-indigo-100 mb-8">...</div>
+                        
+                        <div class="w-full border-t border-slate-100 pt-6">
+                            <h4 class="text-slate-600 font-bold mb-4 text-right">סטטוס חיבור לשרת (API):</h4>
+                            <button id="check-api-btn" onclick="checkApiStatus()" class="w-full px-5 py-3 bg-slate-800 text-white font-bold rounded-lg hover:bg-slate-900 transition-colors shadow-md flex items-center justify-center gap-2">
+                                <i class="fas fa-sync-alt"></i> בדיקת תקינות שלוחה
+                            </button>
+                            <div id="api-status-result" class="mt-4 text-right"></div>
+                        </div>
+                    </div>
+
+                    <!-- אזור ניהול רשימה לבנה -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-300 flex flex-col h-full overflow-hidden">
+                        <div class="p-5 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+                            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                <i class="fas fa-list-ul text-indigo-500"></i> רשימה לבנה (מורשים)
+                            </h3>
+                            <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2 py-1 rounded border border-indigo-200">
+                                <span id="total-whitelist-count">0</span> מספרים
+                            </span>
+                        </div>
+                        
+                        <div class="p-4 bg-white border-b border-slate-200 flex gap-2">
+                            <input type="tel" id="new-whitelist-num" placeholder="הזן מספר פלאפון" class="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-left" dir="ltr">
+                            <button id="add-whitelist-btn" onclick="addWhitelistNumber()" class="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition shadow-sm whitespace-nowrap">
+                                הוסף <i class="fas fa-plus mr-1"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex-1 overflow-y-auto">
+                            <table class="w-full text-right border-collapse">
+                                <tbody id="whitelist-table-body">
+                                    <!-- מספרים ירונדרו כאן -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
     <!-- מודל הוספה/עריכת תלמיד -->
     <div id="student-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm items-center justify-center z-[60]">
-        <!-- ... תוכן המודל ללא שינוי מהקוד המקורי ... -->
+        <!-- תוכן המודל -->
         <div class="bg-white p-6 rounded-xl shadow-2xl border border-slate-200 w-[400px] max-w-[95%] relative">
             <button onclick="closeStudentModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition">
                 <i class="fas fa-times text-xl"></i>
@@ -210,7 +271,7 @@
 
     <!-- מודל שליחת מייל -->
     <div id="email-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm items-center justify-center z-[60]">
-        <!-- ... תוכן המודל ללא שינוי מהקוד המקורי ... -->
+        <!-- תוכן המודל -->
         <div class="bg-white p-6 rounded-xl shadow-2xl border border-slate-200 w-96 max-w-[95%]">
             <h3 class="text-xl font-bold text-slate-800 mb-4"><i class="fas fa-envelope text-indigo-600 ml-2"></i>שליחת דוח במייל</h3>
             <label class="block text-sm font-bold text-slate-600 mb-1">כתובות אימייל (מופרדות בפסיק)</label>
@@ -226,5 +287,6 @@
     <script src="/tfila/client-reports.js"></script>
     <script src="/tfila/client-students.js"></script>
     <script src="/tfila/client-vacations.js"></script>
+    <script src="/tfila/client-phone.js"></script>
 </body>
 </html>

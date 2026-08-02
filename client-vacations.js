@@ -110,15 +110,15 @@ function renderCalendar() {
         </div>
     `;
     
-    let html = '<div class="grid grid-cols-7 gap-2 mb-2">';
+    let html = '<div class="grid grid-cols-7 gap-1.5 mb-1.5">';
     const daysOfWeek = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
     daysOfWeek.forEach(d => {
-        html += `<div class="text-center font-bold text-slate-500 text-sm py-1.5 bg-slate-50 rounded border border-slate-200">${d}</div>`;
+        html += `<div class="text-center font-bold text-slate-500 text-sm py-1 bg-slate-50 rounded border border-slate-200">${d}</div>`;
     });
-    html += '</div><div class="grid grid-cols-7 gap-2 pb-2">';
+    html += '</div><div class="grid grid-cols-7 gap-1.5 pb-2">';
     
     for (let i = 0; i < firstDay; i++) {
-        html += `<div class="bg-slate-50/30 rounded-lg border border-transparent min-h-[85px]"></div>`;
+        html += `<div class="bg-slate-50/30 rounded-md border border-transparent min-h-[60px]"></div>`;
     }
     
     const hebDayFormatter = new Intl.DateTimeFormat('he-IL-u-ca-hebrew', { day: 'numeric' });
@@ -141,20 +141,20 @@ function renderCalendar() {
         let bgClass = isVacation ? 'bg-indigo-50 border-indigo-300 vacation-pattern ring-1 ring-indigo-300' : 'bg-white border-slate-200 hover:border-indigo-400 hover:shadow-md';
         if (isToday && !isVacation) bgClass = 'bg-slate-50 border-indigo-500 ring-2 ring-indigo-500';
         
-        const vacationBadge = isVacation ? `<span class="bg-indigo-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">חופשה</span>` : '';
-        const todayBadge = (isToday && !isVacation) ? `<span class="bg-slate-200 text-slate-700 text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">היום</span>` : '';
+        const vacationBadge = isVacation ? `<span class="bg-indigo-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm">חופשה</span>` : '';
+        const todayBadge = (isToday && !isVacation) ? `<span class="bg-slate-200 text-slate-700 text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm">היום</span>` : '';
         
         html += `
-            <div onclick="toggleVacationDay('${dateStr}', ${isVacation}, this)" class="relative p-2 rounded-lg border shadow-sm min-h-[85px] cursor-pointer transition-all flex flex-col justify-between select-none overflow-hidden ${bgClass}">
+            <div onclick="toggleVacationDay('${dateStr}', ${isVacation}, this)" class="relative p-1.5 rounded-md border shadow-sm min-h-[60px] cursor-pointer transition-all flex flex-col justify-between select-none overflow-hidden ${bgClass}">
                 <div class="flex justify-between items-start w-full">
-                    <span class="text-xl font-bold ${isVacation ? 'text-indigo-800' : 'text-slate-700'} leading-none">${day}</span>
-                    <div class="flex flex-col gap-1 items-end">
+                    <span class="text-lg font-bold ${isVacation ? 'text-indigo-800' : 'text-slate-700'} leading-none">${day}</span>
+                    <div class="flex flex-col gap-0.5 items-end">
                         ${todayBadge}
                         ${vacationBadge}
                     </div>
                 </div>
                 <div class="text-left w-full mt-1">
-                    <span class="text-sm font-semibold ${isVacation ? 'text-indigo-700' : 'text-slate-500'} bg-white/60 px-1.5 py-0.5 rounded">${hebDayStr}</span>
+                    <span class="text-xs font-semibold ${isVacation ? 'text-indigo-700' : 'text-slate-500'} bg-white/60 px-1 py-0.5 rounded">${hebDayStr}</span>
                 </div>
             </div>
         `;

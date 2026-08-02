@@ -30,10 +30,11 @@
     <!-- מעטפת האפליקציה -->
     <div id="app-container" class="hidden w-full h-full">
         <!-- תפריט צד (Sidebar) -->
-        <aside class="w-56 bg-white border-l border-slate-200 flex flex-col shadow-sm z-20 shrink-0">
+        <aside class="w-64 bg-white border-l border-slate-200 flex flex-col shadow-sm z-20 shrink-0">
             <div class="h-20 flex items-center justify-center border-b border-slate-100 bg-slate-50/50">
                 <img src="https://smt-tel-manager.netlify.app/smt.png" draggable="false" class="h-10 select-none pointer-events-none" alt="SMT Logo">
             </div>
+            
             <nav class="flex-1 px-3 py-5 space-y-1 overflow-y-auto">
                 <a href="#" id="nav-reports" onclick="switchView('reports')" class="flex items-center gap-3 px-3 py-2.5 bg-indigo-50 text-indigo-700 rounded-lg font-bold transition-all border border-indigo-100 text-sm cursor-pointer">
                     <i class="fas fa-chart-line w-5 text-center"></i>
@@ -48,6 +49,20 @@
                     <span>יומן חופשות</span>
                 </a>
             </nav>
+
+            <!-- קרדיט ופרטי פרויקט -->
+            <div class="px-4 py-4 bg-slate-50 border-t border-slate-200 flex flex-col items-center text-center">
+                <p class="text-xs font-bold text-slate-700 mb-1">ממשק דוחות נוכחות</p>
+                <p class="text-[10px] text-slate-500 mb-2">פיתוח מיוחד עבור ת"ת בת עין צפת</p>
+                
+                <div class="flex items-center gap-2 mt-1 mb-2">
+                    <span class="text-[10px] text-slate-400">פותח ע"י</span>
+                    <span class="text-xs font-bold text-indigo-600">שימי טרייטל</span>
+                </div>
+                
+                <img src="https://smt-tel-manager.netlify.app/smt.png" class="h-6 opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0 mt-1" alt="שימי טרייטל">
+            </div>
+
             <div class="p-3 border-t border-slate-100">
                 <button onclick="logout()" class="flex items-center gap-3 px-3 py-2 w-full text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors font-bold rounded-lg text-sm">
                     <i class="fas fa-sign-out-alt"></i>
@@ -153,7 +168,7 @@
                 
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-bold text-slate-600 mb-1">קוד תלמיד</label>
+                        <label class="block text-sm font-bold text-slate-600 mb-1">קוד תלמיד (תעודת זהות / זיהוי)</label>
                         <input type="text" id="student-code" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
                     </div>
                     <div>

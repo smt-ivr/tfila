@@ -7,7 +7,6 @@ async function loadReports(dateParam = null) {
     const contentDiv = document.getElementById('reports-view');
 
     if (isFirstLoad) {
-        // התיקון כאן: הוסרה המחלקה h-full
         contentDiv.innerHTML = `
             <div class="flex flex-col items-center justify-center mt-20 text-indigo-600">
                 <i class="fas fa-circle-notch fa-spin text-5xl mb-4"></i>
@@ -39,9 +38,15 @@ async function loadReports(dateParam = null) {
             return;
         }
 
-        if (!response.ok) throw new Error('שגיאה בתקשורת מול השרת');
+        // ניסיון לחלץ את האובייקט מהשרת גם במקרה של שגיאה (כדי לשלוף את השגיאה המדויקת)
+        const data = await response.json().catch(() => null);
 
-        const data = await response.json();
+        if (!response.ok) {
+            const errorMsg = data ? (data.error || data.message || 'שגיאה בתקשורת מול השרת') : 'שגיאה בתקשורת מול השרת';
+            throw new Error(errorMsg);
+        }
+
+        if (!data) throw new Error('התקבלה תשובה ריקה מהשרת');
         
         currentLoadedWeekStart = data.weekStart;
         isFirstLoad = false;
@@ -72,7 +77,10 @@ function renderReports(data) {
     let headersHTML = '';
     let subHeadersHTML = '';
     
-    data.daysToShow.forEach((d) => {
+    // במידה והשרת לא מחזיר daysToShow (כמו במקרה של isBeforeStart) ניקח מערך ריק כברירת מחדל
+    const daysToShow = data.daysToShow || [];
+    
+    daysToShow.forEach((d) => {
         const isToday = d.isToday === true;
         const isVacation = d.isVacation;
         
@@ -98,16 +106,31 @@ function renderReports(data) {
     });
 
     let rowsHTML = '';
+    const totalCols = 3 + (daysToShow.length * 2);
+
+    // תצוגת הודעת המערכת (message) במידה וישנה, מופיעה כרשומה בולטת בתוך הטבלה
+    if (data.message) {
+        rowsHTML += `
+            <tr>
+                <td colspan="${totalCols}" class="py-10 text-center bg-slate-50/70 border-b border-slate-300">
+                    <div class="flex flex-col items-center justify-center gap-2 text-slate-600">
+                        <i class="fas fa-info-circle text-4xl text-indigo-400 mb-1"></i>
+                        <span class="text-lg font-bold">${data.message}</span>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }
     
     if (data.report && data.report.length > 0) {
         data.report.forEach((student) => {
             let cellsHTML = '';
             
-            data.daysToShow.forEach((day) => {
+            daysToShow.forEach((day) => {
                 const isToday = day.isToday === true;
                 const isVacation = day.isVacation;
                 const isFuture = day.isFuture === true;
-                const status = student.weeklyStatus[day.index];
+                const status = student.weeklyStatus ? student.weeklyStatus[day.index] : null;
                 
                 const cellBg = isVacation ? 'bg-slate-100 vacation-pattern' : (isToday ? 'bg-indigo-50/40' : 'bg-white');
                 const hasExplicitReport = status && (status.type === 'absence' || status.type === 'late' || status.badBehavior);
@@ -124,22 +147,26 @@ function renderReports(data) {
                     `;
                 } else {
                     let timeContent = '';
-                    if (status.type === 'absence') {
-                        timeContent = '<span class="bg-red-100 text-red-700 px-1.5 py-0.5 rounded text-xs font-bold shadow-sm border border-red-200">-</span>';
-                    } else if (status.type === 'late') {
-                        timeContent = `<span class="bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded text-xs font-bold shadow-sm border border-amber-200">${status.minutes} דקות</span>`;
-                    } else if (status.type === 'ok') {
-                        timeContent = '<span class="text-emerald-500 font-bold text-sm"><i class="fas fa-check"></i></span>';
-                    }
-
-                    let behaviorContent = status.behaviorMark || '';
+                    let behaviorContent = '';
                     let behaviorClass = 'text-slate-600 font-bold';
-                    
-                    if (status.badBehavior || status.behaviorMark === 'ב') {
-                        behaviorContent = 'ב';
-                        behaviorClass = 'text-white bg-red-500 px-2 py-0.5 rounded text-xs font-bold shadow-sm';
-                    } else if (status.behaviorMark === 'א') {
-                        behaviorClass = 'text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded text-xs font-bold border border-emerald-200';
+
+                    if (status) {
+                        if (status.type === 'absence') {
+                            timeContent = '<span class="bg-red-100 text-red-700 px-1.5 py-0.5 rounded text-xs font-bold shadow-sm border border-red-200">-</span>';
+                        } else if (status.type === 'late') {
+                            timeContent = `<span class="bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded text-xs font-bold shadow-sm border border-amber-200">${status.minutes} דקות</span>`;
+                        } else if (status.type === 'ok') {
+                            timeContent = '<span class="text-emerald-500 font-bold text-sm"><i class="fas fa-check"></i></span>';
+                        }
+
+                        behaviorContent = status.behaviorMark || '';
+                        
+                        if (status.badBehavior || status.behaviorMark === 'ב') {
+                            behaviorContent = 'ב';
+                            behaviorClass = 'text-white bg-red-500 px-2 py-0.5 rounded text-xs font-bold shadow-sm';
+                        } else if (status.behaviorMark === 'א') {
+                            behaviorClass = 'text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded text-xs font-bold border border-emerald-200';
+                        }
                     }
 
                     cellsHTML += `
@@ -151,8 +178,8 @@ function renderReports(data) {
 
             rowsHTML += `
                 <tr class="hover:bg-slate-50 transition-colors bg-white">
-                    <td class="px-3 py-2 border border-slate-300 font-bold text-slate-800 text-center text-sm whitespace-nowrap w-28">${student.first_name}</td>
-                    <td class="px-3 py-2 border border-slate-300 font-bold text-slate-800 text-center text-sm whitespace-nowrap w-28">${student.last_name}</td>
+                    <td class="px-3 py-2 border border-slate-300 font-bold text-slate-800 text-center text-sm whitespace-nowrap w-28">${student.first_name || ''}</td>
+                    <td class="px-3 py-2 border border-slate-300 font-bold text-slate-800 text-center text-sm whitespace-nowrap w-28">${student.last_name || ''}</td>
                     <td class="px-2 py-2 border border-slate-300 text-center w-16">
                         <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200 text-xs font-bold">${student.class_name || '-'}</span>
                     </td>
@@ -160,6 +187,15 @@ function renderReports(data) {
                 </tr>
             `;
         });
+    } else if (!data.message) {
+        // במידה ואין דוח נתונים ואין הודעת מערכת להציג
+        rowsHTML += `
+            <tr>
+                <td colspan="${totalCols}" class="py-8 text-center text-slate-500 font-bold bg-slate-50/50">
+                    לא נמצאו נתונים לשבוע זה
+                </td>
+            </tr>
+        `;
     }
 
     const parashaText = data.parasha || '';
@@ -187,7 +223,7 @@ function renderReports(data) {
                 <div class="absolute inset-0 flex flex-col justify-center items-center pointer-events-none">
                     <h2 class="text-2xl sm:text-3xl font-black text-indigo-700 flex items-center justify-center gap-3 whitespace-nowrap">
                         <i class="fas fa-file-alt text-indigo-500 text-2xl"></i>
-                        דוח ${parashaText} ${yearText}
+                        ${parashaText ? `דוח ${parashaText} ${yearText}` : `דוח שבועי ${yearText}`}
                     </h2>
                     ${data.isFutureWeek ? `<span class="mt-1 text-slate-400 font-bold text-[10px] bg-slate-100 px-3 py-0.5 rounded-full border border-slate-200 shadow-sm pointer-events-auto">שבוע עתידי</span>` : ''}
                 </div>

@@ -207,7 +207,7 @@ function renderReports(data) {
             
             <div id="table-wrapper" class="w-full bg-white rounded-xl shadow-sm border border-slate-300 overflow-hidden mb-8 relative min-h-[300px]">
                 
-                <div id="spinner-overlay" class="hidden absolute inset-0 bg-white/70 backdrop-blur-sm flex flex-col items-center justify-center z-50 transition-opacity">
+                <div id="spinner-overlay" class="hidden absolute inset-0 bg-white/70 backdrop-blur-sm flex flex-col items-center justify-start pt-32 z-50 transition-opacity">
                     <i class="fas fa-circle-notch fa-spin text-5xl text-indigo-600 drop-shadow-md mb-3"></i>
                     <span class="text-indigo-800 font-bold text-lg">מעדכן נתונים...</span>
                 </div>

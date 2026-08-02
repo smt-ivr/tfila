@@ -127,7 +127,7 @@ function renderReports(data) {
                     if (status.type === 'absence') {
                         timeContent = '<span class="bg-red-100 text-red-700 px-1.5 py-0.5 rounded text-xs font-bold shadow-sm border border-red-200">-</span>';
                     } else if (status.type === 'late') {
-                        timeContent = `<span class="bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded text-xs font-bold shadow-sm border border-amber-200">${status.minutes}דקות</span>`;
+                        timeContent = `<span class="bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded text-xs font-bold shadow-sm border border-amber-200">איחור ${status.minutes} דק'</span>`;
                     } else if (status.type === 'ok') {
                         timeContent = '<span class="text-emerald-500 font-bold text-sm"><i class="fas fa-check"></i></span>';
                     }

@@ -32,21 +32,21 @@
         <!-- תפריט צד (Sidebar) -->
         <aside class="w-56 bg-white border-l border-slate-200 flex flex-col shadow-sm z-20 shrink-0">
             
-            <!-- אזור קרדיט ולוגו עליון מצומצם -->
-            <div class="py-4 px-3 flex flex-col items-center justify-center border-b border-slate-200 bg-slate-50/80 text-center">
-                <h1 class="text-[13px] font-extrabold text-slate-800 leading-tight">ממשק דוחות מבצע תפילה</h1>
-                <p class="text-[10px] text-slate-500 leading-tight mt-1">פיתוח מיוחד עבור<br>ת"ת בת עין צפת</p>
+            <!-- אזור קרדיט ולוגו עליון מצומצם במיוחד -->
+            <div class="pt-3 pb-2 px-2 flex flex-col items-center justify-center border-b border-slate-200 bg-slate-50/80 text-center">
+                <h1 class="text-[12px] font-extrabold text-slate-800 leading-none mb-1">ממשק דוחות מבצע תפילה</h1>
+                <p class="text-[10px] text-slate-500 leading-none mb-2">פיתוח מיוחד עבור ת"ת בת עין צפת</p>
                 
-                <div class="flex flex-col items-center mt-2.5 border-t border-slate-200 pt-2.5 w-full">
-                    <div class="flex items-center gap-1 text-[10px]">
+                <div class="flex flex-col items-center border-t border-slate-200 pt-1.5 w-full">
+                    <div class="flex items-center gap-1 text-[10px] mb-0.5">
                         <span class="text-slate-400">פותח ע"י</span>
                         <span class="font-bold text-indigo-600">שימי טרייטל</span>
                     </div>
-                    <img src="https://smt-tel-manager.netlify.app/smt.png" draggable="false" class="h-8 mt-1.5 select-none pointer-events-none drop-shadow-sm" alt="SMT Logo">
+                    <img src="https://smt-tel-manager.netlify.app/smt.png" draggable="false" class="h-11 select-none pointer-events-none drop-shadow-sm" alt="SMT Logo">
                 </div>
             </div>
             
-            <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+            <nav class="flex-1 px-3 py-2.5 space-y-1 overflow-y-auto">
                 <a href="#" id="nav-reports" onclick="switchView('reports')" class="flex items-center gap-3 px-3 py-2.5 bg-indigo-50 text-indigo-700 rounded-lg font-bold transition-all border border-indigo-100 text-sm cursor-pointer">
                     <i class="fas fa-chart-line w-5 text-center"></i>
                     <span>דוחות נוכחות</span>
@@ -165,7 +165,7 @@
                 
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-bold text-slate-600 mb-1">קוד תלמיד (תעודת זהות / זיהוי)</label>
+                        <label class="block text-sm font-bold text-slate-600 mb-1">קוד תלמיד</label>
                         <input type="text" id="student-code" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
                     </div>
                     <div>

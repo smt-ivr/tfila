@@ -3,9 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>דוח נוכחות מבצע תפילה</title>
+    <title>דוח נוכחות - מערכת ניהול</title>
     <link rel="icon" href="https://smt-tel-manager.netlify.app/smt.png" type="image/png">
+    
+    <!-- סקריפט להעלמת אזהרת הפיתוח של Tailwind מהקונסול -->
+    <script>
+        const originalWarn = console.warn;
+        console.warn = function(...args) {
+            if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) return;
+            originalWarn.apply(console, args);
+        };
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800&display=swap" rel="stylesheet">
     <link href="/tfila/style.css" rel="stylesheet">
@@ -14,16 +24,39 @@
 
     <!-- מסך התחברות -->
     <div id="login-screen" class="hidden fixed inset-0 bg-slate-50 items-center justify-center z-50">
-        <div class="bg-white p-8 rounded-2xl shadow-xl border border-slate-200 w-96 max-w-[90%] flex flex-col items-center">
-            <!-- לוגו מוגן מגרירה ובחירה -->
-            <img src="https://smt-tel-manager.netlify.app/smt.png" draggable="false" ondragstart="return false;" class="h-14 mb-4 select-none pointer-events-none" alt="SMT Logo">
-            <div class="text-center mb-6">
-                <i class="fas fa-lock text-3xl text-indigo-600 mb-2"></i>
-                <h2 class="text-2xl font-extrabold text-slate-800">כניסה למערכת</h2>
+        <div class="bg-white p-8 rounded-2xl shadow-xl border border-slate-200 w-[420px] max-w-[95%] flex flex-col items-center">
+            
+            <!-- לוגו והקשר המערכת -->
+            <div class="text-center mb-6 w-full pb-5 border-b border-slate-100 flex flex-col items-center">
+                <img src="https://smt-tel-manager.netlify.app/smt.png" draggable="false" ondragstart="return false;" class="h-16 mb-3 select-none pointer-events-none drop-shadow-sm" alt="SMT Logo">
+                <h1 class="text-xl font-extrabold text-slate-800 leading-none mb-2">ממשק ניהול דוחות</h1>
+                <p class="text-sm font-bold text-indigo-600 bg-indigo-50 px-4 py-1 rounded-full border border-indigo-100">ת"ת בת עין צפת</p>
             </div>
-            <input type="password" id="password-input" autofocus placeholder="הכנס סיסמה" class="w-full px-4 py-3 border border-slate-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center text-lg font-medium">
-            <button onclick="login()" id="login-btn" class="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 font-bold transition-all shadow-md">היכנס</button>
-            <p id="login-error" class="text-red-500 text-center mt-4 font-bold hidden"></p>
+
+            <!-- אזור טעינת בדיקת IP -->
+            <div id="ip-check-loader" class="flex flex-col items-center justify-center my-4">
+                <i class="fas fa-circle-notch fa-spin text-4xl text-indigo-600 mb-3"></i>
+                <p class="text-slate-600 font-bold">בודק הרשאות גישה...</p>
+            </div>
+
+            <!-- טופס ההתחברות (מוסתר עד סיום בדיקת ה-IP) -->
+            <div id="login-form-container" class="hidden w-full flex-col items-center">
+                <div class="text-center mb-5 w-full">
+                    <div class="inline-flex items-center justify-center gap-2 bg-amber-50 text-amber-700 border border-amber-200 px-3 py-2 rounded-lg text-sm font-bold w-full">
+                        <i class="fas fa-shield-alt text-lg"></i>
+                        <span>כתובת ה-IP אינה מורשית, נדרשת סיסמה</span>
+                    </div>
+                </div>
+                
+                <!-- שימוש בתגית form פותר את האזהרה בקונסול ומאפשר לחיצה על Enter טבעית -->
+                <form id="login-form" onsubmit="event.preventDefault(); login();" class="w-full">
+                    <input type="password" id="password-input" autocomplete="current-password" placeholder="הכנס סיסמה" class="w-full px-4 py-3 border border-slate-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center text-lg font-medium">
+                    <button type="submit" id="login-btn" class="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 font-bold transition-all shadow-md">
+                        היכנס למערכת
+                    </button>
+                </form>
+                <p id="login-error" class="text-red-500 text-center mt-4 font-bold hidden"></p>
+            </div>
         </div>
     </div>
 
@@ -31,12 +64,10 @@
     <div id="app-container" class="hidden w-full h-full">
         <!-- תפריט צד (Sidebar) -->
         <aside class="w-56 bg-white border-l border-slate-200 flex flex-col shadow-sm z-20 shrink-0">
-            
             <!-- אזור קרדיט ולוגו עליון מצומצם במיוחד -->
             <div class="pt-3 pb-2 px-2 flex flex-col items-center justify-center border-b border-slate-200 bg-slate-50/80 text-center">
-                <h1 class="text-[12px] font-extrabold text-slate-800 leading-none mb-1">ממשק דוחות מבצע תפילה</h1>
+                <h1 class="text-[12px] font-extrabold text-slate-800 leading-none mb-1">ממשק ניהול דוחות</h1>
                 <p class="text-[10px] text-slate-500 leading-none mb-2">פיתוח מיוחד עבור ת"ת בת עין צפת</p>
-                
                 <div class="flex flex-col items-center border-t border-slate-200 pt-1.5 w-full">
                     <div class="flex items-center gap-1 text-[10px] mb-0.5">
                         <span class="text-slate-400">פותח ע"י</span>
@@ -71,11 +102,8 @@
 
         <!-- אזור תוכן מרכזי -->
         <main class="flex-1 flex flex-col h-screen overflow-auto bg-slate-50 relative p-6" id="app-content">
-            
             <!-- תצוגת דוחות נוכחות -->
-            <div id="reports-view" class="w-full h-full block max-w-[1400px] mx-auto">
-                <!-- הדוחות והספינר יוזרקו לכאן -->
-            </div>
+            <div id="reports-view" class="w-full h-full block max-w-[1400px] mx-auto"></div>
 
             <!-- תצוגת ניהול תלמידים -->
             <div id="students-view" class="hidden w-full h-full flex-col max-w-[1400px] mx-auto">
@@ -84,7 +112,6 @@
                         <button onclick="openStudentModal()" class="px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm text-sm">
                             <i class="fas fa-plus ml-2"></i>הוסף תלמיד
                         </button>
-                        
                         <div id="bulk-action-container" class="hidden items-center gap-3 bg-indigo-50 px-4 py-1.5 rounded-lg border border-indigo-200 shadow-sm transition-all">
                             <span class="text-sm font-bold text-indigo-800"><span id="selected-count">0</span> נבחרו</span>
                             <input type="text" id="bulk-class-input" placeholder="כיתה חדשה" class="w-24 px-3 py-1.5 text-sm font-bold border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none text-center">
@@ -93,12 +120,10 @@
                             </button>
                         </div>
                     </div>
-                    
                     <h2 class="text-2xl font-black text-indigo-700 flex items-center justify-center gap-3">
                         <i class="fas fa-user-graduate text-indigo-500"></i>
                         ניהול תלמידים
                     </h2>
-                    
                     <div class="font-bold text-slate-600 bg-slate-50 px-4 py-2 rounded-lg border border-slate-200 text-sm">
                         סה"כ תלמידים: <span id="total-students-count" class="text-indigo-600 mr-1 text-lg">0</span>
                     </div>
@@ -119,9 +144,7 @@
                                     <th class="px-4 py-3 font-bold text-slate-800 border-x border-slate-300 w-32 no-print">פעולות</th>
                                 </tr>
                             </thead>
-                            <tbody id="students-table-body">
-                                <!-- תלמידים יוזרקו לכאן -->
-                            </tbody>
+                            <tbody id="students-table-body"></tbody>
                         </table>
                     </div>
                 </div>
@@ -141,11 +164,8 @@
                         <i class="fas fa-chevron-left"></i>
                     </button>
                 </div>
-                
                 <div class="bg-white rounded-xl shadow-sm border border-slate-300 flex-1 relative p-6 overflow-y-auto">
-                    <div id="calendar-grid-container" class="h-full">
-                        <!-- הלוח שנה יוזרק לכאן -->
-                    </div>
+                    <div id="calendar-grid-container" class="h-full"></div>
                 </div>
             </div>
 
@@ -154,15 +174,14 @@
 
     <!-- מודל הוספה/עריכת תלמיד -->
     <div id="student-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm items-center justify-center z-[60]">
+        <!-- ... תוכן המודל ללא שינוי מהקוד המקורי ... -->
         <div class="bg-white p-6 rounded-xl shadow-2xl border border-slate-200 w-[400px] max-w-[95%] relative">
             <button onclick="closeStudentModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition">
                 <i class="fas fa-times text-xl"></i>
             </button>
             <h3 id="student-modal-title" class="text-xl font-bold text-slate-800 mb-6 text-center">הוספת תלמיד חדש</h3>
-            
             <form id="student-form" onsubmit="saveStudent(event)">
                 <input type="hidden" id="student-mode" value="add">
-                
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-bold text-slate-600 mb-1">קוד תלמיד</label>
@@ -181,7 +200,6 @@
                         <input type="text" id="student-class" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
                     </div>
                 </div>
-
                 <div class="flex justify-end gap-3 mt-8">
                     <button type="button" onclick="closeStudentModal()" class="px-5 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-lg hover:bg-slate-200 transition">ביטול</button>
                     <button type="submit" id="student-save-btn" class="px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition shadow-md w-28">שמור</button>
@@ -192,6 +210,7 @@
 
     <!-- מודל שליחת מייל -->
     <div id="email-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm items-center justify-center z-[60]">
+        <!-- ... תוכן המודל ללא שינוי מהקוד המקורי ... -->
         <div class="bg-white p-6 rounded-xl shadow-2xl border border-slate-200 w-96 max-w-[95%]">
             <h3 class="text-xl font-bold text-slate-800 mb-4"><i class="fas fa-envelope text-indigo-600 ml-2"></i>שליחת דוח במייל</h3>
             <label class="block text-sm font-bold text-slate-600 mb-1">כתובות אימייל (מופרדות בפסיק)</label>

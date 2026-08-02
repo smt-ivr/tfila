@@ -1,276 +1,259 @@
-let currentWhitelist = [];
-let currentEmails = [];
+const API_BASE = 'https://smti.uk/tfila/api';
 
-async function loadPhoneSettings() {
-    const didEl = document.getElementById('phone-did');
-    const extEl = document.getElementById('phone-ext');
-    const statusDiv = document.getElementById('api-status-result');
-    const emailsTbody = document.getElementById('emails-table-body');
+document.addEventListener('DOMContentLoaded', () => {
+    checkAuth();
+    setupModals();
+});
+
+async function checkAuth() {
+    const pass = localStorage.getItem('admin_pass');
+    const ipWhitelisted = localStorage.getItem('ip_whitelisted');
     
-    didEl.innerHTML = '<i class="fas fa-spinner fa-spin text-indigo-300"></i>';
-    extEl.innerText = 'טוען נתונים...';
-    statusDiv.innerHTML = '<div class="text-slate-400 font-bold"><i class="fas fa-circle-notch fa-spin ml-2"></i>קורא נתוני שלוחה...</div>';
-    emailsTbody.innerHTML = `<tr><td colspan="2" class="py-4 text-center text-indigo-600"><i class="fas fa-circle-notch fa-spin text-2xl"></i></td></tr>`;
+    const loginScreen = document.getElementById('login-screen');
+    const appContainer = document.getElementById('app-container');
+    const ipLoader = document.getElementById('ip-check-loader');
+    const loginFormContainer = document.getElementById('login-form-container');
     
-    try {
-        const pass = localStorage.getItem('admin_pass');
-        const res = await fetch(`${API_BASE}/phone-settings/routing-info`, {
-            headers: { 'Content-Type': 'application/json', 'X-Admin-Pass': pass }
-        });
-        
-        if (res.status === 401) return logout();
-        
-        const data = await res.json();
-        if (data.success) {
-            didEl.innerText = data.data.did || 'לא נמצא מספר';
-            extEl.innerText = data.data.extension ? `שלוחה: /${data.data.extension}` : 'לא נמצא ניתוב מוגדר';
-            
-            analyzeExtensionSettings(data.data.extSettings);
-        } else {
-            throw new Error('שגיאה בטעינת נתוני הניתוב');
-        }
-        
-        loadWhitelist();
-    } catch (error) {
-        didEl.innerText = 'שגיאה';
-        extEl.innerText = 'לא ניתן לטעון נתונים';
-        statusDiv.innerHTML = '<div class="text-red-500 font-bold">שגיאת רשת בטעינת הנתונים</div>';
-        emailsTbody.innerHTML = `<tr><td colspan="2" class="py-4 text-center text-red-500 font-bold">שגיאה בטעינת מיילים</td></tr>`;
-    }
-}
-
-function analyzeExtensionSettings(iniData) {
-    const statusDiv = document.getElementById('api-status-result');
-    const emailsTbody = document.getElementById('emails-table-body');
-    currentEmails = [];
-
-    if (!iniData) {
-        statusDiv.innerHTML = `
-            <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg font-bold flex flex-col gap-2 shadow-sm text-right">
-                <div class="flex items-center gap-2"><i class="fas fa-times-circle text-lg"></i><span>לא ניתן לקרוא הגדרות!</span></div>
-                <div class="text-sm font-normal">לא נמצא קובץ ext.ini או שהשלוחה ריקה. נא לפנות למתכנת.</div>
-            </div>`;
-        emailsTbody.innerHTML = `<tr><td colspan="2" class="py-4 text-center text-slate-500 font-bold">לא נמצאו הגדרות לשלוחה</td></tr>`;
-        document.getElementById('total-emails-count').innerText = "0";
+    if (pass || ipWhitelisted === 'true') {
+        showApp(loginScreen, appContainer);
         return;
     }
 
-    // ניתוח סטטוס השלוחה
-    const isApi = iniData.includes('type=api');
-    const hasLink = iniData.includes('api_link=') || iniData.includes('api_link =');
-    const isWhitelistOn = iniData.includes('white_list=yes');
+    loginScreen.classList.remove('hidden');
+    loginScreen.classList.add('flex');
+    appContainer.classList.add('hidden');
+    appContainer.classList.remove('flex');
     
-    let linkMatch = iniData.match(/api_link\s*=\s*(.+)/);
-    let apiLink = linkMatch ? linkMatch[1].trim() : 'חסר קישור';
+    ipLoader.classList.remove('hidden');
+    ipLoader.classList.add('flex');
+    loginFormContainer.classList.add('hidden');
+    loginFormContainer.classList.remove('flex');
 
-    let htmlStatus = '';
-    
-    if (isApi && hasLink && apiLink.includes('smti.uk/tfila/api')) {
-        htmlStatus += `<div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-2 rounded-lg font-bold flex items-center gap-2 mb-2 shadow-sm"><i class="fas fa-check-circle"></i>השלוחה מוגדרת כראוי כ-API</div>`;
-        htmlStatus += `<div class="text-xs bg-slate-50 text-slate-500 border border-slate-200 px-3 py-1.5 rounded text-left font-mono" dir="ltr" title="נתיב ה-API">${apiLink}</div>`;
-    } else {
-        htmlStatus += `<div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg font-bold flex items-start gap-2 shadow-sm text-right"><i class="fas fa-exclamation-triangle text-lg mt-0.5"></i><div>תקלה בהגדרות ה-API בשלוחה! ייתכן ואין קישור תקין או שהשלוחה אינה מוגדרת כ-API. נא לפנות למתכנת.</div></div>`;
-    }
-
-    if (!isWhitelistOn) {
-        htmlStatus += `<div class="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-2 rounded-lg font-bold flex items-center gap-2 mt-3 shadow-sm"><i class="fas fa-shield-alt"></i>אזהרה: הרשימה הלבנה מנותקת! (חסר white_list=yes). כל אחד יכול לחייג למערכת.</div>`;
-    } else {
-        htmlStatus += `<div class="bg-indigo-50 border border-indigo-200 text-indigo-700 px-4 py-2 rounded-lg font-bold flex items-center gap-2 mt-3 shadow-sm"><i class="fas fa-lock"></i>הרשימה הלבנה פעילה ומגינה על המערכת</div>`;
-    }
-    
-    statusDiv.innerHTML = htmlStatus;
-
-    // ניתוח מיילים
-    const regex = /^api_add_\d+=email\d*=(.+)$/gmi;
-    let match;
-    while ((match = regex.exec(iniData)) !== null) {
-        if(match[1]) currentEmails.push(match[1].trim());
-    }
-    
-    document.getElementById('total-emails-count').innerText = currentEmails.length;
-    renderEmails();
-}
-
-function renderEmails() {
-    const tbody = document.getElementById('emails-table-body');
-    let rows = '';
-    
-    if (currentEmails.length === 0) {
-        rows = `<tr><td colspan="2" class="py-6 text-center text-slate-500 font-bold">לא מוגדרים מיילים בשלוחה</td></tr>`;
-    } else {
-        currentEmails.forEach((email, index) => {
-            rows += `
-            <tr class="hover:bg-indigo-50/30 bg-white border-b border-slate-200 transition-colors">
-                <td class="px-4 py-3 border-x border-slate-300 font-bold text-slate-700 tracking-wider text-sm text-left" dir="ltr">${email}</td>
-                <td class="px-2 py-3 border-x border-slate-300 text-center w-24">
-                    <button onclick="editEmail(${index})" class="text-slate-400 hover:text-indigo-600 p-2 transition-colors" title="ערוך"><i class="fas fa-edit"></i></button>
-                    <button onclick="deleteEmail(${index})" class="text-slate-400 hover:text-red-500 p-2 transition-colors" title="מחק"><i class="fas fa-trash"></i></button>
-                </td>
-            </tr>`;
-        });
-    }
-    tbody.innerHTML = rows;
-}
-
-async function saveEmailsToBackend() {
     try {
-        const pass = localStorage.getItem('admin_pass');
-        const res = await fetch(`${API_BASE}/phone-settings/update-emails`, {
+        const res = await fetch(`${API_BASE}/check-ip`);
+        const data = await res.json().catch(() => ({}));
+        
+        if (data.whitelisted === true) {
+            localStorage.setItem('ip_whitelisted', 'true');
+            showApp(loginScreen, appContainer);
+        } else {
+            showLoginForm(ipLoader, loginFormContainer);
+        }
+    } catch (e) {
+        showLoginForm(ipLoader, loginFormContainer);
+    }
+}
+
+function showApp(loginScreen, appContainer) {
+    loginScreen.classList.add('hidden');
+    loginScreen.classList.remove('flex');
+    appContainer.classList.remove('hidden');
+    appContainer.classList.add('flex');
+    switchView('reports');
+}
+
+function showLoginForm(ipLoader, loginFormContainer) {
+    ipLoader.classList.add('hidden');
+    ipLoader.classList.remove('flex');
+    loginFormContainer.classList.remove('hidden');
+    loginFormContainer.classList.add('flex');
+    setTimeout(() => document.getElementById('password-input').focus(), 100);
+}
+
+async function login() {
+    const passInput = document.getElementById('password-input');
+    const pass = passInput.value;
+    const errorMsg = document.getElementById('login-error');
+    const btn = document.getElementById('login-btn');
+    
+    if (!pass) return;
+
+    errorMsg.classList.add('hidden');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(`${API_BASE}/login`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-Admin-Pass': pass },
-            body: JSON.stringify({ emails: currentEmails })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: pass })
         });
-        
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'שגיאה בעדכון המיילים');
-        
-        document.getElementById('total-emails-count').innerText = currentEmails.length;
-        renderEmails();
-        showToast('המיילים עודכנו בהצלחה במערכת הטלפונית', 'success');
-    } catch (error) {
-        showToast(error.message, 'error');
-        // טעינה מחדש של הדף כדי לאפס במקרה של שגיאה
-        loadPhoneSettings(); 
+
+        const data = await res.json().catch(() => ({}));
+
+        if (res.ok) {
+            localStorage.setItem('admin_pass', pass);
+            checkAuth();
+        } else {
+            errorMsg.innerText = data.error || data.message || 'שגיאה באימות נתונים מול השרת';
+            errorMsg.classList.remove('hidden');
+            passInput.value = ''; 
+            passInput.focus();
+        }
+    } catch (e) {
+        errorMsg.innerText = 'שגיאת תקשורת - השרת אינו מגיב';
+        errorMsg.classList.remove('hidden');
+    } finally {
+        btn.innerHTML = 'היכנס למערכת';
+        btn.disabled = false;
     }
 }
 
-function addEmailAction() {
-    customPrompt('הוספת כתובת מייל', 'הזן את כתובת האימייל החדשה שברצונך להוסיף:', '', (newEmail) => {
-        newEmail = newEmail.trim();
-        if (!newEmail || !newEmail.includes('@')) return showToast('כתובת אימייל לא חוקית', 'error');
+function logout() {
+    localStorage.removeItem('admin_pass');
+    localStorage.removeItem('ip_whitelisted');
+    
+    document.getElementById('password-input').value = '';
+    document.getElementById('login-error').classList.add('hidden');
+    
+    checkAuth();
+}
+
+function switchView(viewName) {
+    const views = ['reports', 'students', 'vacations', 'phone'];
+    const activeNavClass = "flex items-center gap-3 px-3 py-2.5 bg-indigo-50 text-indigo-700 rounded-lg font-bold transition-all border border-indigo-100 text-sm cursor-pointer";
+    const inactiveNavClass = "flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 rounded-lg font-medium transition-all text-sm cursor-pointer";
+
+    views.forEach(v => {
+        const viewEl = document.getElementById(`${v}-view`);
+        const navEl = document.getElementById(`nav-${v}`);
         
-        if (currentEmails.includes(newEmail)) return showToast('המייל כבר קיים ברשימה', 'error');
-        
-        currentEmails.push(newEmail);
-        saveEmailsToBackend();
+        if (v === viewName) {
+            viewEl.classList.remove('hidden');
+            if (v === 'students' || v === 'vacations' || v === 'phone') {
+                viewEl.classList.add('flex');
+            } else {
+                viewEl.classList.add('block');
+            }
+            if (navEl) navEl.className = activeNavClass;
+        } else {
+            viewEl.classList.add('hidden');
+            viewEl.classList.remove('flex', 'block');
+            if (navEl) navEl.className = inactiveNavClass;
+        }
     });
+
+    if (viewName === 'reports' && typeof loadReports === 'function') loadReports();
+    if (viewName === 'students' && typeof loadStudents === 'function') loadStudents();
+    if (viewName === 'vacations' && typeof loadVacations === 'function') loadVacations();
+    if (viewName === 'phone' && typeof loadPhoneSettings === 'function') loadPhoneSettings();
 }
 
-function deleteEmail(index) {
-    customConfirm(`האם אתה בטוח שברצונך למחוק את המייל:\n${currentEmails[index]}?`, () => {
-        currentEmails.splice(index, 1);
-        saveEmailsToBackend();
-    });
+function openEmailModal() {
+    document.getElementById('email-modal').classList.remove('hidden');
+    document.getElementById('email-modal').classList.add('flex');
 }
 
-function editEmail(index) {
-    const oldEmail = currentEmails[index];
-    customPrompt('עריכת כתובת מייל', `הזן את הכתובת החדשה במקום:\n${oldEmail}`, oldEmail, (newEmail) => {
-        newEmail = newEmail.trim();
-        if (!newEmail || newEmail === oldEmail) return;
-        if (!newEmail.includes('@')) return showToast('כתובת אימייל לא חוקית', 'error');
-        
-        currentEmails[index] = newEmail;
-        saveEmailsToBackend();
-    });
+function closeEmailModal() {
+    document.getElementById('email-modal').classList.add('hidden');
+    document.getElementById('email-modal').classList.remove('flex');
 }
 
-
-async function loadWhitelist() {
-    const tbody = document.getElementById('whitelist-table-body');
-    tbody.innerHTML = `<tr><td colspan="2" class="py-8 text-center text-indigo-600"><i class="fas fa-circle-notch fa-spin text-3xl"></i></td></tr>`;
+async function sendEmailAction(btn) {
+    const email = document.getElementById('email-input').value.trim();
+    if (!email) return showToast('נא להזין אימייל', 'error');
     
-    try {
-        const pass = localStorage.getItem('admin_pass');
-        const res = await fetch(`${API_BASE}/phone-settings/whitelist`, {
-            headers: { 'Content-Type': 'application/json', 'X-Admin-Pass': pass }
-        });
-        
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'שגיאה בטעינת הרשימה הלבנה');
-        
-        currentWhitelist = data.data || [];
-        document.getElementById('total-whitelist-count').innerText = currentWhitelist.length;
-        renderWhitelist();
-    } catch (error) {
-        tbody.innerHTML = `<tr><td colspan="2" class="py-6 text-center text-red-600 font-bold bg-red-50">שגיאה בטעינת הרשימה: ${error.message}</td></tr>`;
-    }
-}
-
-function renderWhitelist() {
-    const tbody = document.getElementById('whitelist-table-body');
-    let rows = '';
-    
-    if (currentWhitelist.length === 0) {
-        rows = `<tr><td colspan="2" class="py-6 text-center text-slate-500 font-bold">הרשימה הלבנה ריקה</td></tr>`;
-    } else {
-        currentWhitelist.forEach(num => {
-            rows += `
-            <tr class="hover:bg-indigo-50/30 bg-white border-b border-slate-200 transition-colors">
-                <td class="px-6 py-3 border-x border-slate-300 font-bold text-slate-700 text-lg tracking-wider text-left" dir="ltr">${num}</td>
-                <td class="px-6 py-3 border-x border-slate-300 text-center w-32">
-                    <button onclick="editWhitelistNumber('${num}')" class="text-slate-400 hover:text-indigo-600 p-2 transition-colors" title="ערוך"><i class="fas fa-edit"></i></button>
-                    <button onclick="deleteWhitelistNumber('${num}')" class="text-slate-400 hover:text-red-500 p-2 transition-colors ml-2" title="מחק"><i class="fas fa-trash"></i></button>
-                </td>
-            </tr>`;
-        });
-    }
-    tbody.innerHTML = rows;
-}
-
-function addWhitelistNumber() {
-    const input = document.getElementById('new-whitelist-num');
-    const number = input.value.trim();
-    
-    if (!number) return showToast('נא להזין מספר טלפון', 'error');
-    
-    const btn = document.getElementById('add-whitelist-btn');
+    const originalText = btn.innerHTML;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
     btn.disabled = true;
     
-    const pass = localStorage.getItem('admin_pass');
-    fetch(`${API_BASE}/phone-settings/whitelist/add`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Admin-Pass': pass },
-        body: JSON.stringify({ number })
-    }).then(res => res.json()).then(data => {
-        if (!data.success) throw new Error(data.error || data.message || 'שגיאה בהוספה');
-        input.value = '';
-        currentWhitelist = data.data;
-        document.getElementById('total-whitelist-count').innerText = currentWhitelist.length;
-        renderWhitelist();
-        showToast('המספר התווסף בהצלחה', 'success');
-    }).catch(err => {
-        showToast(err.message, 'error');
-    }).finally(() => {
-        btn.innerHTML = 'הוסף <i class="fas fa-plus mr-1"></i>';
-        btn.disabled = false;
-    });
-}
-
-function deleteWhitelistNumber(number) {
-    customConfirm(`האם אתה בטוח שברצונך למחוק את המספר ${number} מהרשימה המורשית?`, () => {
+    try {
         const pass = localStorage.getItem('admin_pass');
-        fetch(`${API_BASE}/phone-settings/whitelist/delete`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-Admin-Pass': pass },
-            body: JSON.stringify({ number })
-        }).then(res => res.json()).then(data => {
-            if (!data.success) throw new Error(data.error || 'שגיאה במחיקה');
-            currentWhitelist = data.data;
-            document.getElementById('total-whitelist-count').innerText = currentWhitelist.length;
-            renderWhitelist();
-            showToast('המספר נמחק בהצלחה', 'success');
-        }).catch(err => showToast(err.message, 'error'));
-    });
-}
-
-function editWhitelistNumber(oldNumber) {
-    customPrompt('עריכת מספר מורשה', `הזן את המספר החדש במקום:\n${oldNumber}`, oldNumber, (newNumber) => {
-        newNumber = newNumber.trim();
-        if (!newNumber || newNumber === oldNumber) return;
+        let url = `${API_BASE}/send-email?email=${encodeURIComponent(email)}`;
         
-        const pass = localStorage.getItem('admin_pass');
-        fetch(`${API_BASE}/phone-settings/whitelist/update`, {
+        if (typeof currentFetchDate !== 'undefined' && currentFetchDate) {
+            url += `&date=${currentFetchDate}`;
+        }
+        
+        const res = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-Admin-Pass': pass },
-            body: JSON.stringify({ oldNumber: oldNumber, newNumber: newNumber })
-        }).then(res => res.json()).then(data => {
-            if (!data.success) throw new Error(data.error || 'שגיאה בעדכון');
-            currentWhitelist = data.data;
-            document.getElementById('total-whitelist-count').innerText = currentWhitelist.length;
-            renderWhitelist();
-            showToast('המספר עודכן בהצלחה', 'success');
-        }).catch(err => showToast(err.message, 'error'));
+            headers: { 'Content-Type': 'application/json', 'X-Admin-Pass': pass }
+        });
+        
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'אירעה שגיאה בשליחת המייל');
+        
+        showToast('המייל נשלח בהצלחה!', 'success');
+        closeEmailModal();
+        
+    } catch (error) {
+        showToast(error.message, 'error');
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+// -------------------------------------------------------------
+// מערכת הודעות קופצות ומודלים מותאמים (במקום alert ו-prompt)
+// -------------------------------------------------------------
+
+function showToast(msg, type = 'success') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    const bgColor = type === 'error' ? 'bg-red-600' : 'bg-emerald-600';
+    const icon = type === 'error' ? 'fa-times-circle' : 'fa-check-circle';
+    
+    toast.className = `${bgColor} text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 transform transition-all duration-300 translate-y-10 opacity-0 border border-black/10`;
+    toast.innerHTML = `<i class="fas ${icon} text-lg"></i><span class="font-bold text-sm">${msg}</span>`;
+    
+    container.appendChild(toast);
+    
+    setTimeout(() => toast.classList.remove('translate-y-10', 'opacity-0'), 10);
+    setTimeout(() => {
+        toast.classList.add('translate-y-10', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
+}
+
+let activeConfirmCallback = null;
+let activePromptCallback = null;
+
+function setupModals() {
+    // מודל אישור
+    document.getElementById('confirm-btn-yes').addEventListener('click', () => {
+        if (activeConfirmCallback) activeConfirmCallback();
+        closeCustomConfirm();
     });
+    
+    // מודל קלט - כפתור שמירה
+    document.getElementById('prompt-btn-save').addEventListener('click', () => {
+        if (activePromptCallback) activePromptCallback(document.getElementById('custom-prompt-input').value);
+        closeCustomPrompt();
+    });
+    
+    // אנטר במודל קלט
+    document.getElementById('custom-prompt-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('prompt-btn-save').click();
+        }
+    });
+}
+
+function customConfirm(msg, callback) {
+    document.getElementById('custom-confirm-msg').innerText = msg;
+    activeConfirmCallback = callback;
+    document.getElementById('custom-confirm-modal').classList.replace('hidden', 'flex');
+}
+
+function closeCustomConfirm() {
+    document.getElementById('custom-confirm-modal').classList.replace('flex', 'hidden');
+    activeConfirmCallback = null;
+}
+
+function customPrompt(title, desc, defaultValue, callback) {
+    document.getElementById('custom-prompt-title').innerText = title;
+    document.getElementById('custom-prompt-desc').innerText = desc;
+    const input = document.getElementById('custom-prompt-input');
+    input.value = defaultValue || '';
+    activePromptCallback = callback;
+    
+    document.getElementById('custom-prompt-modal').classList.replace('hidden', 'flex');
+    setTimeout(() => input.focus(), 100);
+}
+
+function closeCustomPrompt() {
+    document.getElementById('custom-prompt-modal').classList.replace('flex', 'hidden');
+    activePromptCallback = null;
 }

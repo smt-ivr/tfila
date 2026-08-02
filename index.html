@@ -16,7 +16,7 @@
     <div id="login-screen" class="hidden fixed inset-0 bg-slate-50 items-center justify-center z-50">
         <div class="bg-white p-8 rounded-2xl shadow-xl border border-slate-200 w-96 max-w-[90%] flex flex-col items-center">
             <!-- לוגו מוגן מגרירה ובחירה -->
-            <img src="https://smt-tel-manager.netlify.app/smt.png" draggable="false" ondragstart="return false;" class="h-14 mb-4 select-none pointer-events-none" alt="SMT Logo">
+            <img src="https://smt-tel-manager.netlify.app/smt.png" draggable="false" ondragstart="return false;" class="h-16 mb-4 select-none pointer-events-none" alt="SMT Logo">
             <div class="text-center mb-6">
                 <i class="fas fa-lock text-3xl text-indigo-600 mb-2"></i>
                 <h2 class="text-2xl font-extrabold text-slate-800">כניסה למערכת</h2>
@@ -30,9 +30,19 @@
     <!-- מעטפת האפליקציה -->
     <div id="app-container" class="hidden w-full h-full">
         <!-- תפריט צד (Sidebar) -->
-        <aside class="w-64 bg-white border-l border-slate-200 flex flex-col shadow-sm z-20 shrink-0">
-            <div class="h-20 flex items-center justify-center border-b border-slate-100 bg-slate-50/50">
-                <img src="https://smt-tel-manager.netlify.app/smt.png" draggable="false" class="h-10 select-none pointer-events-none" alt="SMT Logo">
+        <aside class="w-56 bg-white border-l border-slate-200 flex flex-col shadow-sm z-20 shrink-0">
+            
+            <!-- אזור לוגו וקרדיט עליון -->
+            <div class="py-5 px-4 flex flex-col items-center justify-center border-b border-slate-200 bg-slate-50/80 text-center">
+                <img src="https://smt-tel-manager.netlify.app/smt.png" draggable="false" class="h-16 mb-3 select-none pointer-events-none drop-shadow-sm" alt="SMT Logo">
+                
+                <p class="text-[12px] font-extrabold text-slate-700 mb-1 leading-tight">ממשק דוחות מבצע תפילה</p>
+                <p class="text-[10px] text-slate-500 mb-3 leading-tight">פיתוח מיוחד עבור<br>ת"ת בת עין צפת</p>
+                
+                <div class="flex items-center gap-1.5 border-t border-slate-200 pt-2 w-full justify-center">
+                    <span class="text-[10px] text-slate-400">פותח ע"י</span>
+                    <span class="text-[11px] font-bold text-indigo-600">שימי טרייטל</span>
+                </div>
             </div>
             
             <nav class="flex-1 px-3 py-5 space-y-1 overflow-y-auto">
@@ -49,19 +59,6 @@
                     <span>יומן חופשות</span>
                 </a>
             </nav>
-
-            <!-- קרדיט ופרטי פרויקט -->
-            <div class="px-4 py-4 bg-slate-50 border-t border-slate-200 flex flex-col items-center text-center">
-                <p class="text-xs font-bold text-slate-700 mb-1">ממשק דוחות נוכחות</p>
-                <p class="text-[10px] text-slate-500 mb-2">פיתוח מיוחד עבור ת"ת בת עין צפת</p>
-                
-                <div class="flex items-center gap-2 mt-1 mb-2">
-                    <span class="text-[10px] text-slate-400">פותח ע"י</span>
-                    <span class="text-xs font-bold text-indigo-600">שימי טרייטל</span>
-                </div>
-                
-                <img src="https://smt-tel-manager.netlify.app/smt.png" class="h-6 opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0 mt-1" alt="שימי טרייטל">
-            </div>
 
             <div class="p-3 border-t border-slate-100">
                 <button onclick="logout()" class="flex items-center gap-3 px-3 py-2 w-full text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors font-bold rounded-lg text-sm">
@@ -132,7 +129,6 @@
             <!-- תצוגת יומן חופשות -->
             <div id="vacations-view" class="hidden w-full h-full flex-col max-w-[1400px] mx-auto">
                 <div class="w-full h-20 mb-5 flex justify-between items-center bg-white px-6 rounded-xl shadow-sm border border-slate-200 shrink-0 no-print">
-                    <!-- החצים הוחלפו לבקשתך: ימינה מחזיר אחורה (חודש קודם), שמאלה מקדם לחודש הבא -->
                     <button onclick="navigateMonth(-1)" class="w-10 h-10 flex items-center justify-center bg-slate-50 border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-100 hover:text-indigo-600 transition-colors shadow-sm" title="חודש קודם">
                         <i class="fas fa-chevron-right"></i>
                     </button>

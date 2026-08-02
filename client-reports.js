@@ -38,7 +38,6 @@ async function loadReports(dateParam = null) {
             return;
         }
 
-        // ניסיון לחלץ את האובייקט מהשרת גם במקרה של שגיאה (כדי לשלוף את השגיאה המדויקת)
         const data = await response.json().catch(() => null);
 
         if (!response.ok) {
@@ -77,8 +76,8 @@ function renderReports(data) {
     let headersHTML = '';
     let subHeadersHTML = '';
     
-    // במידה והשרת לא מחזיר daysToShow (כמו במקרה של isBeforeStart) ניקח מערך ריק כברירת מחדל
     const daysToShow = data.daysToShow || [];
+    const hasDaysAndData = daysToShow.length > 0 && data.report && data.report.length > 0;
     
     daysToShow.forEach((d) => {
         const isToday = d.isToday === true;
@@ -106,16 +105,15 @@ function renderReports(data) {
     });
 
     let rowsHTML = '';
-    const totalCols = 3 + (daysToShow.length * 2);
+    const totalCols = hasDaysAndData ? 3 + (daysToShow.length * 2) : 1;
 
-    // תצוגת הודעת המערכת (message) במידה וישנה, מופיעה כרשומה בולטת בתוך הטבלה
     if (data.message) {
         rowsHTML += `
             <tr>
-                <td colspan="${totalCols}" class="py-10 text-center bg-slate-50/70 border-b border-slate-300">
-                    <div class="flex flex-col items-center justify-center gap-2 text-slate-600">
-                        <i class="fas fa-info-circle text-4xl text-indigo-400 mb-1"></i>
-                        <span class="text-lg font-bold">${data.message}</span>
+                <td colspan="${totalCols}" class="${hasDaysAndData ? 'py-10 border-b border-slate-300' : 'py-20 rounded-xl'} text-center bg-slate-50/70">
+                    <div class="flex flex-col items-center justify-center gap-3 text-slate-600">
+                        <i class="fas fa-info-circle text-5xl text-indigo-400 mb-1"></i>
+                        <span class="text-xl font-bold">${data.message}</span>
                     </div>
                 </td>
             </tr>
@@ -188,13 +186,28 @@ function renderReports(data) {
             `;
         });
     } else if (!data.message) {
-        // במידה ואין דוח נתונים ואין הודעת מערכת להציג
         rowsHTML += `
             <tr>
-                <td colspan="${totalCols}" class="py-8 text-center text-slate-500 font-bold bg-slate-50/50">
+                <td colspan="${totalCols}" class="py-12 text-center text-slate-500 font-bold bg-slate-50/50">
                     לא נמצאו נתונים לשבוע זה
                 </td>
             </tr>
+        `;
+    }
+
+    // ציור מבנה ה- Thead רק אם יש טבלה של ממש להציג
+    let theadHTML = '';
+    if (hasDaysAndData) {
+        theadHTML = `
+            <thead>
+                <tr>
+                    <th rowspan="2" class="px-3 py-3 text-center font-bold text-slate-800 bg-slate-100 border border-slate-300 w-28 text-sm">שם פרטי</th>
+                    <th rowspan="2" class="px-3 py-3 text-center font-bold text-slate-800 bg-slate-100 border border-slate-300 w-28 text-sm">משפחה</th>
+                    <th rowspan="2" class="px-2 py-3 text-center font-bold text-slate-800 bg-slate-100 border border-slate-300 w-16 text-sm">כיתה</th>
+                    ${headersHTML}
+                </tr>
+                <tr>${subHeadersHTML}</tr>
+            </thead>
         `;
     }
 
@@ -207,7 +220,6 @@ function renderReports(data) {
 
     const htmlOutput = `
         <div class="max-w-[1400px] mx-auto w-full flex flex-col items-center">
-            <!-- נוסף ה-class של no-print כדי שלא יודפס סרגל הכלים -->
             <div class="w-full h-20 mb-5 flex justify-between items-center bg-white px-4 rounded-xl shadow-sm border border-slate-200 relative no-print">
                 
                 <div class="flex gap-2 z-10 shrink-0">
@@ -241,24 +253,16 @@ function renderReports(data) {
                 </div>
             </div>
             
-            <div id="table-wrapper" class="w-full bg-white rounded-xl shadow-sm border border-slate-300 overflow-hidden mb-8 relative min-h-[300px]">
+            <div id="table-wrapper" class="w-full bg-white rounded-xl shadow-sm border border-slate-300 overflow-hidden mb-8 relative min-h-[300px] flex flex-col">
                 
                 <div id="spinner-overlay" class="hidden absolute inset-0 bg-white/70 backdrop-blur-sm flex flex-col items-center justify-start pt-32 z-50 transition-opacity">
                     <i class="fas fa-circle-notch fa-spin text-5xl text-indigo-600 drop-shadow-md mb-3"></i>
                     <span class="text-indigo-800 font-bold text-lg">מעדכן נתונים...</span>
                 </div>
 
-                <div class="overflow-x-auto flex justify-center">
+                <div class="overflow-x-auto flex-1 flex justify-center w-full">
                     <table class="border-collapse mx-auto w-full text-center" style="table-layout: auto;">
-                        <thead>
-                            <tr>
-                                <th rowspan="2" class="px-3 py-3 text-center font-bold text-slate-800 bg-slate-100 border border-slate-300 w-28 text-sm">שם פרטי</th>
-                                <th rowspan="2" class="px-3 py-3 text-center font-bold text-slate-800 bg-slate-100 border border-slate-300 w-28 text-sm">משפחה</th>
-                                <th rowspan="2" class="px-2 py-3 text-center font-bold text-slate-800 bg-slate-100 border border-slate-300 w-16 text-sm">כיתה</th>
-                                ${headersHTML}
-                            </tr>
-                            <tr>${subHeadersHTML}</tr>
-                        </thead>
+                        ${theadHTML}
                         <tbody>${rowsHTML}</tbody>
                     </table>
                 </div>

@@ -5,6 +5,7 @@ import reportsJs from './client-reports.js';
 import studentsJs from './client-students.js';
 import vacationsJs from './client-vacations.js';
 import phoneJs from './client-phone.js';
+import studentReportJs from './client-student-report.js';
 
 export default {
     async fetch(request, env, ctx) {
@@ -38,6 +39,10 @@ export default {
         // הניתוב החדש לקובץ הגדרות הטלפון
         if (path === '/phone.js' || path === '/tfila/phone.js' || path === '/client-phone.js' || path === '/tfila/client-phone.js') {
             return new Response(phoneJs, { headers: { 'Content-Type': 'application/javascript; charset=utf-8' } });
+        }
+
+        if (path === '/student-report.js' || path === '/tfila/student-report.js' || path === '/client-student-report.js' || path === '/tfila/client-student-report.js') {
+            return new Response(studentReportJs, { headers: { 'Content-Type': 'application/javascript; charset=utf-8' } });
         }
 
         // שגיאת 404 אם הקובץ לא נמצא

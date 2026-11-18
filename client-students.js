@@ -42,7 +42,10 @@ async function loadStudents() {
                     <td class="px-4 py-3 border-x border-slate-300">
                         <span class="bg-slate-100 px-3 py-1 rounded-md text-sm font-bold border border-slate-200 text-slate-600">${student.class_name || '-'}</span>
                     </td>
-                    <td class="px-4 py-3 border-x border-slate-300 text-center no-print">
+                    <td class="px-4 py-3 border-x border-slate-300 text-center no-print whitespace-nowrap">
+                        <button onclick="openStudentReport('${student.code}')" class="px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 font-bold text-sm transition-colors border border-emerald-200 shadow-sm ml-1.5" title="דוח תלמיד">
+                            <i class="fas fa-id-card ml-1.5"></i>דוח
+                        </button>
                         <button onclick="openStudentModal('${student.code}')" class="px-4 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 font-bold text-sm transition-colors border border-indigo-200 shadow-sm">
                             <i class="fas fa-edit ml-1.5"></i>ערוך
                         </button>

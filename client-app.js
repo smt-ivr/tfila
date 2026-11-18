@@ -110,7 +110,7 @@ function logout() {
 }
 
 function switchView(viewName) {
-    const views = ['reports', 'students', 'vacations', 'phone'];
+    const views = ['reports', 'students', 'student-report', 'vacations', 'phone'];
     const activeNavClass = "flex items-center gap-3 px-3 py-2.5 bg-indigo-50 text-indigo-700 rounded-lg font-bold transition-all border border-indigo-100 text-sm cursor-pointer";
     const inactiveNavClass = "flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 rounded-lg font-medium transition-all text-sm cursor-pointer";
 
@@ -120,7 +120,7 @@ function switchView(viewName) {
         
         if (v === viewName) {
             viewEl.classList.remove('hidden');
-            if (v === 'students' || v === 'vacations' || v === 'phone') {
+            if (v === 'students' || v === 'student-report' || v === 'vacations' || v === 'phone') {
                 viewEl.classList.add('flex');
             } else {
                 viewEl.classList.add('block');
@@ -135,6 +135,7 @@ function switchView(viewName) {
 
     if (viewName === 'reports' && typeof loadReports === 'function') loadReports();
     if (viewName === 'students' && typeof loadStudents === 'function') loadStudents();
+    if (viewName === 'student-report' && typeof loadStudentReport === 'function') loadStudentReport();
     if (viewName === 'vacations' && typeof loadVacations === 'function') loadVacations();
     if (viewName === 'phone' && typeof loadPhoneSettings === 'function') loadPhoneSettings();
 }

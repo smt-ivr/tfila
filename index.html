@@ -109,6 +109,10 @@
                     <i class="fas fa-users w-5 text-center"></i>
                     <span>ניהול תלמידים</span>
                 </a>
+                <a href="#" id="nav-student-report" onclick="switchView('student-report')" class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 rounded-lg font-medium transition-all text-sm cursor-pointer">
+                    <i class="fas fa-id-card w-5 text-center"></i>
+                    <span>דוח תלמיד</span>
+                </a>
                 <a href="#" id="nav-vacations" onclick="switchView('vacations')" class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 rounded-lg font-medium transition-all text-sm cursor-pointer">
                     <i class="far fa-calendar-alt w-5 text-center"></i>
                     <span>יומן חופשות</span>
@@ -168,7 +172,7 @@
                                     <th class="px-4 py-3 font-bold text-slate-800 border-x border-slate-300">שם פרטי</th>
                                     <th class="px-4 py-3 font-bold text-slate-800 border-x border-slate-300">משפחה</th>
                                     <th class="px-4 py-3 font-bold text-slate-800 border-x border-slate-300 w-32">כיתה</th>
-                                    <th class="px-4 py-3 font-bold text-slate-800 border-x border-slate-300 w-32 no-print">פעולות</th>
+                                    <th class="px-4 py-3 font-bold text-slate-800 border-x border-slate-300 w-48 no-print">פעולות</th>
                                 </tr>
                             </thead>
                             <tbody id="students-table-body"></tbody>
@@ -176,6 +180,8 @@
                     </div>
                 </div>
             </div>
+
+            <div id="student-report-view" class="hidden w-full flex-col max-w-[1400px] mx-auto"></div>
 
             <div id="vacations-view" class="hidden w-full h-full flex-col max-w-[1400px] mx-auto">
                 <div class="w-full h-20 mb-5 flex justify-between items-center bg-white px-6 rounded-xl shadow-sm border border-slate-200 shrink-0 no-print">
@@ -331,5 +337,6 @@
     <script src="/tfila/client-students.js"></script>
     <script src="/tfila/client-vacations.js"></script>
     <script src="/tfila/client-phone.js"></script>
+    <script src="/tfila/client-student-report.js"></script>
 </body>
 </html>
